@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}DocFlow - All-in-One PDF & Ebook Tools{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>Manage your documents, the easy way.</h1>
+  <p>Merge, split, compress, convert, watermark, and turn any text into an ebook — free, fast, no signup.</p>
+</section>
+
+<section class="tool-grid">
+  <a href="{{ url_for('merge_page') }}" class="tool-card">
+    <div class="tool-icon">🔗</div>
+    <h3>Merge PDF</h3>
+    <p>Combine multiple PDFs into one file.</p>
+  </a>
+  <a href="{{ url_for('split_page') }}" class="tool-card">
+    <div class="tool-icon">✂️</div>
+    <h3>Split PDF</h3>
+    <p>Extract specific pages or ranges.</p>
+  </a>
+  <a href="{{ url_for('compress_page') }}" class="tool-card">
+    <div class="tool-icon">📉</div>
+    <h3>Compress PDF</h3>
+    <p>Reduce file size without losing quality.</p>
+  </a>
+  <a href="{{ url_for('convert_page') }}" class="tool-card">
+    <div class="tool-icon">🔄</div>
+    <h3>Convert PDF</h3>
+    <p>PDF to Word or PDF to Images.</p>
+  </a>
+  <a href="{{ url_for('watermark_page') }}" class="tool-card">
+    <div class="tool-icon">💧</div>
+    <h3>Watermark</h3>
+    <p>Add or remove watermarks from your own PDFs.</p>
+  </a>
+  <a href="{{ url_for('ebook_page') }}" class="tool-card">
+    <div class="tool-icon">📚</div>
+    <h3>Ebook Generator</h3>
+    <p>Turn text or PDF content into an EPUB ebook.</p>
+  </a>
+</section>
+{% endblock %}
