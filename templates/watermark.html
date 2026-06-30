@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Watermark PDF - DocFlow{% endblock %}
+{% block content %}
+<section class="tool-page">
+  <h1>Watermark</h1>
+  <p class="note">Use this only on documents you own or have the rights to edit. The "remove" tool strips
+  watermark layers/annotations and large rotated overlay text — it won't bypass DRM-protected files.</p>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="add">Add Watermark</button>
+    <button class="tab-btn" data-tab="remove">Remove Watermark</button>
+  </div>
+
+  <form id="add-form" class="upload-form tab-panel active" data-panel="add">
+    <input type="file" id="add-file" name="file" accept=".pdf" required>
+    <input type="text" id="wm-text" name="text" placeholder="Watermark text" value="CONFIDENTIAL">
+    <button type="submit" class="btn-primary">Add Watermark</button>
+  </form>
+
+  <form id="remove-form" class="upload-form tab-panel" data-panel="remove">
+    <input type="file" id="remove-file" name="file" accept=".pdf" required>
+    <button type="submit" class="btn-primary">Remove Watermark</button>
+  </form>
+
+  <div id="status" class="status"></div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelector(`.tab-panel[data-panel="${btn.dataset.tab}"]`).classList.add('active');
+  });
+});
+
+document.getElementById('add-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const status = document.getElementById('status');
+  const file = document.getElementById('add-file').files[0];
+  if (!file) { status.textContent = 'File chuno.'; return; }
+
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('text', document.getElementById('wm-text').value || 'WATERMARK');
+
+  status.textContent = 'Adding watermark...';
+  try {
+    const res = await fetch('/api/watermark/add', { method: 'POST', body: fd });
+    if (!res.ok) { const err = await res.json(); status.textContent = 'Error: ' + err.error; return; }
+    const blob = await res.blob();
+    downloadBlob(blob, 'watermarked.pdf');
+    status.textContent = 'Done!';
+  } catch (err) { status.textContent = 'Error: ' + err.message; }
+});
+
+document.getElementById('remove-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const status = document.getElementById('status');
+  const file = document.getElementById('remove-file').files[0];
+  if (!file) { status.textContent = 'File chuno.'; return; }
+
+  const fd = new FormData();
+  fd.append('file', file);
+
+  status.textContent = 'Removing watermark...';
+  try {
+    const res = await fetch('/api/watermark/remove', { method: 'POST', body: fd });
+    if (!res.ok) { const err = await res.json(); status.textContent = 'Error: ' + err.error; return; }
+    const blob = await res.blob();
+    downloadBlob(blob, 'watermark_removed.pdf');
+    status.textContent = 'Done!';
+  } catch (err) { status.textContent = 'Error: ' + err.message; }
+});
+</script>
+{% endblock %}
