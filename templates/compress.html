@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Compress PDF - DocFlow{% endblock %}
+{% block content %}
+<section class="tool-page">
+  <h1>Compress PDF</h1>
+  <p>Reduce your PDF's file size with optimized stream compression.</p>
+
+  <form id="compress-form" class="upload-form">
+    <input type="file" id="file" name="file" accept=".pdf" required>
+    <button type="submit" class="btn-primary">Compress PDF</button>
+  </form>
+
+  <div id="status" class="status"></div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('compress-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const status = document.getElementById('status');
+  const file = document.getElementById('file').files[0];
+  if (!file) { status.textContent = 'File chuno.'; return; }
+
+  const fd = new FormData();
+  fd.append('file', file);
+
+  status.textContent = 'Compressing...';
+  try {
+    const res = await fetch('/api/compress', { method: 'POST', body: fd });
+    if (!res.ok) {
+      const err = await res.json();
+      status.textContent = 'Error: ' + err.error;
+      return;
+    }
+    const blob = await res.blob();
+    downloadBlob(blob, 'compressed.pdf');
+    status.textContent = 'Done! Download shuru ho gaya.';
+  } catch (err) {
+    status.textContent = 'Error: ' + err.message;
+  }
+});
+</script>
+{% endblock %}
