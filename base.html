@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>{% block title %}DocFlow - PDF & Ebook Tools{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="navbar">
+  <a href="{{ url_for('index') }}" class="brand">Doc<span>Flow</span></a>
+  <nav class="nav-links">
+    <a href="{{ url_for('merge_page') }}">Merge</a>
+    <a href="{{ url_for('split_page') }}">Split</a>
+    <a href="{{ url_for('compress_page') }}">Compress</a>
+    <a href="{{ url_for('convert_page') }}">Convert</a>
+    <a href="{{ url_for('watermark_page') }}">Watermark</a>
+    <a href="{{ url_for('ebook_page') }}">Ebook</a>
+  </nav>
+</header>
+
+<main class="container">
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+  <p>&copy; 2026 DocFlow. Files are auto-deleted after processing — nothing is stored.</p>
+</footer>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>
