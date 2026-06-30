@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Ebook Generator - DocFlow{% endblock %}
+{% block content %}
+<section class="tool-page">
+  <h1>Ebook Generator</h1>
+  <p>Upload a .txt or .pdf file and we'll generate a downloadable .epub ebook from it.</p>
+
+  <form id="ebook-form" class="upload-form">
+    <input type="text" id="title" name="title" placeholder="Ebook title" required>
+    <input type="text" id="author" name="author" placeholder="Author name" required>
+    <input type="file" id="file" name="file" accept=".pdf,.txt" required>
+    <button type="submit" class="btn-primary">Generate Ebook</button>
+  </form>
+
+  <div id="status" class="status"></div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('ebook-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const status = document.getElementById('status');
+  const file = document.getElementById('file').files[0];
+  if (!file) { status.textContent = 'File chuno.'; return; }
+
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('title', document.getElementById('title').value);
+  fd.append('author', document.getElementById('author').value);
+
+  status.textContent = 'Generating ebook...';
+  try {
+    const res = await fetch('/api/ebook/generate', { method: 'POST', body: fd });
+    if (!res.ok) { const err = await res.json(); status.textContent = 'Error: ' + err.error; return; }
+    const blob = await res.blob();
+    const title = document.getElementById('title').value || 'ebook';
+    downloadBlob(blob, title + '.epub');
+    status.textContent = 'Done!';
+  } catch (err) { status.textContent = 'Error: ' + err.message; }
+});
+</script>
+{% endblock %}
