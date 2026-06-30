@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Convert PDF - DocFlow{% endblock %}
+{% block content %}
+<section class="tool-page">
+  <h1>Convert PDF</h1>
+  <p>Convert your PDF to a Word document, or export every page as an image.</p>
+
+  <form id="convert-form" class="upload-form">
+    <input type="file" id="file" name="file" accept=".pdf" required>
+    <div class="radio-group">
+      <label><input type="radio" name="target" value="word" checked> PDF to Word (.docx)</label>
+      <label><input type="radio" name="target" value="images"> PDF to Images (.zip of PNGs)</label>
+    </div>
+    <button type="submit" class="btn-primary">Convert</button>
+  </form>
+
+  <div id="status" class="status"></div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('convert-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const status = document.getElementById('status');
+  const file = document.getElementById('file').files[0];
+  if (!file) { status.textContent = 'File chuno.'; return; }
+
+  const target = document.querySelector('input[name="target"]:checked').value;
+  const fd = new FormData();
+  fd.append('file', file);
+
+  status.textContent = 'Converting...';
+  try {
+    const endpoint = target === 'word' ? '/api/convert/word' : '/api/convert/images';
+    const res = await fetch(endpoint, { method: 'POST', body: fd });
+    if (!res.ok) {
+      const err = await res.json();
+      status.textContent = 'Error: ' + err.error;
+      return;
+    }
+    const blob = await res.blob();
+    const filename = target === 'word' ? 'converted.docx' : 'pages.zip';
+    downloadBlob(blob, filename);
+    status.textContent = 'Done! Download shuru ho gaya.';
+  } catch (err) {
+    status.textContent = 'Error: ' + err.message;
+  }
+});
+</script>
+{% endblock %}
