@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Merge PDF - DocFlow{% endblock %}
+{% block content %}
+<div class="tool-wrap">
+  <div class="tool-header">
+    <span class="tool-emoji">🔗</span>
+    <div>
+      <h1>Merge PDF</h1>
+      <p>Combine multiple PDFs into one file.</p>
+    </div>
+  </div>
+  <div class="tool-card">
+    <label class="upload-area" id="drop-area">
+      <input type="file" id="files" accept=".pdf" multiple>
+      <div class="upload-icon">📂</div>
+      <div class="upload-text">Tap to select PDF files</div>
+      <div class="upload-hint">Select 2 or more PDFs</div>
+    </label>
+    <div id="file-list" class="file-list"></div>
+    <button class="btn-action" id="submit-btn" onclick="doMerge()" disabled>
+      <span id="btn-text">🔗 Merge PDFs</span>
+    </button>
+    <div id="status" class="status-box hidden"></div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const filesInput = document.getElementById('files');
+const fileList = document.getElementById('file-list');
+const btn = document.getElementById('submit-btn');
+
+filesInput.addEventListener('change', () => {
+  fileList.innerHTML = '';
+  [...filesInput.files].forEach(f => {
+    const d = document.createElement('div');
+    d.className = 'file-item';
+    d.innerHTML = `<span>📄</span><span>${f.name}</span><span class="fsize">${(f.size/1024).toFixed(0)} KB</span>`;
+    fileList.appendChild(d);
+  });
+  btn.disabled = filesInput.files.length < 2;
+});
+
+async function doMerge() {
+  const status = document.getElementById('status');
+  if (filesInput.files.length < 2) return;
+  setLoading(true, 'Merging...');
+  const fd = new FormData();
+  [...filesInput.files].forEach(f => fd.append('files', f));
+  try {
+    const res = await fetch('/api/merge', {method:'POST', body:fd});
+    if (!res.ok) { const e = await res.json(); showStatus('error', e.error); setLoading(false); return; }
+    const blob = await res.blob();
+    downloadBlob(blob, 'merged.pdf');
+    showStatus('success', '✅ Download started!');
+  } catch(e) { showStatus('error', e.message); }
+  setLoading(false);
+}
+
+function setLoading(on, text) {
+  const b = document.getElementById('btn-text');
+  document.getElementById('submit-btn').disabled = on;
+  b.textContent = on ? '⏳ ' + text : '🔗 Merge PDFs';
+}
+function showStatus(type, msg) {
+  const s = document.getElementById('status');
+  s.className = 'status-box ' + type;
+  s.textContent = msg;
+}
+</script>
+{% endblock %}
