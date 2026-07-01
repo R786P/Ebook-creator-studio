@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Split PDF - DocFlow{% endblock %}
+{% block content %}
+<div class="tool-wrap">
+  <div class="tool-header">
+    <span class="tool-emoji">✂️</span>
+    <div>
+      <h1>Split PDF</h1>
+      <p>Extract specific pages from a PDF.</p>
+    </div>
+  </div>
+  <div class="tool-card">
+    <label class="upload-area">
+      <input type="file" id="file" accept=".pdf">
+      <div class="upload-icon">📂</div>
+      <div class="upload-text">Tap to select a PDF</div>
+    </label>
+    <div id="file-label" class="file-label"></div>
+    <div class="input-group">
+      <label>Page ranges <span class="hint-text">(e.g. 1-3,5,7-9 — leave empty for all)</span></label>
+      <input type="text" id="ranges" placeholder="e.g. 1-3,5">
+    </div>
+    <button class="btn-action" id="submit-btn" onclick="doSplit()" disabled>
+      <span id="btn-text">✂️ Split PDF</span>
+    </button>
+    <div id="status" class="status-box hidden"></div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const fi = document.getElementById('file');
+fi.addEventListener('change', () => {
+  document.getElementById('file-label').textContent = fi.files[0]?.name || '';
+  document.getElementById('submit-btn').disabled = !fi.files[0];
+});
+async function doSplit() {
+  setLoading(true,'Splitting...');
+  const fd = new FormData();
+  fd.append('file', fi.files[0]);
+  fd.append('ranges', document.getElementById('ranges').value);
+  try {
+    const res = await fetch('/api/split',{method:'POST',body:fd});
+    if (!res.ok){const e=await res.json();showStatus('error',e.error);setLoading(false);return;}
+    downloadBlob(await res.blob(),'split.pdf');
+    showStatus('success','✅ Download started!');
+  } catch(e){showStatus('error',e.message);}
+  setLoading(false);
+}
+function setLoading(on,t){document.getElementById('submit-btn').disabled=on;document.getElementById('btn-text').textContent=on?'⏳ '+t:'✂️ Split PDF';}
+function showStatus(type,msg){const s=document.getElementById('status');s.className='status-box '+type;s.textContent=msg;}
+</script>
+{% endblock %}
